@@ -1,0 +1,90 @@
+using System;
+using System.Text.RegularExpressions;
+
+class MainClass {
+    static void Main(string[] args) {
+        int[] registers = new int[16]; // 16 регистров
+        string[] memory = new string[256]; // Память
+
+        while (true) {
+            Console.WriteLine("Введите команду:");
+            string? input = Console.ReadLine();
+            
+            string pattern = @"(\w+)\s+r(\d+),\s*(r\d+|\d+)";
+            Match match = Regex.Match(input, pattern);
+
+            if (match.Success) {
+                string command = match.Groups[1].Value;
+                int registerIndex, operand1, operand2;
+
+                if (!int.TryParse(match.Groups[2].Value, out registerIndex) || 
+                    registerIndex < 0 || registerIndex > 15) {
+                    Console.WriteLine("Неправильный индекс регистра!");
+                    continue;
+                }
+
+                if (match.Groups[3].Value.StartsWith("r")) {
+                    // Если операнд является регистром
+                    int.TryParse(match.Groups[3].Value.Substring(1), out operand2);
+                    if (operand2 < 0 || operand2 > 15) {
+                        Console.WriteLine("Неправильный индекс регистра-операнда!");
+                        continue;
+                    }
+                    operand1 = registers[operand2];
+                } else {
+                    // Если операнд является числом
+                    if (!int.TryParse(match.Groups[3].Value, out operand1)) {
+                        Console.WriteLine("Неправильный операнд!");
+                        continue;
+                    }
+                }
+
+                switch (command) {
+                    case "LD":
+                        if (operand1 < 0 || operand1 > 255) {
+                            Console.WriteLine("Неправильный адрес памяти!");
+                            continue;
+                        }
+                        if (memory[operand1] == null) {
+                            Console.WriteLine("Память по указанному адресу пуста!");
+                            continue;
+                        }
+                        registers[registerIndex] = int.Parse(memory[operand1]);
+                        Console.WriteLine($"Регистр r{registerIndex} загружен значением из памяти: {registers[registerIndex]}");
+                        break;
+
+                    case "MOV":
+                        registers[registerIndex] = operand1;
+                        Console.WriteLine($"Регистр r{registerIndex} установлен в значение: {registers[registerIndex]}");
+                        break;
+
+                    case "ADD":
+                        registers[registerIndex] += operand1;
+                        Console.WriteLine($"Регистр r{registerIndex} увеличен на значение {operand1}: {registers[registerIndex]}");
+                        break;
+
+                    case "SUB":
+                        registers[registerIndex] -= operand1;
+                        Console.WriteLine($"Регистр r{registerIndex} уменьшен на значение {operand1}: {registers[registerIndex]}");
+                        break;
+
+                    case "BR":
+                        Console.WriteLine("Прыжок на адрес: " + operand1);
+                        break;
+
+                    case "BRGZ":
+                        if (registers[registerIndex] > 0) {
+                            Console.WriteLine("Прыжок на адрес: " + operand1);
+                        }
+                        break;
+
+                    default:
+                        Console.WriteLine("Неизвестная команда!");
+                        break;
+                }
+            } else {
+                Console.WriteLine("Неправильный формат команды!");
+            }
+        }
+    }
+}
