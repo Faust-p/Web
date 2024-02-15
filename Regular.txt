@@ -88,3 +88,32 @@ class MainClass {
         }
     }
 }
+
+
+
+using System;
+using System.Text.RegularExpressions;
+
+public class PhoneNumberValidator
+{
+    public static bool Validate(string phoneNumber)
+    {
+        Regex regex = new Regex(@"^(\+?\d{1,3})?\s?(\(\d{3}\))?\s?[1-9]\d{1,2}\s?\d{2,3}\s?\d{2,3}$");
+        
+        return regex.IsMatch(phoneNumber);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string[] phoneNumbers = { "+373(777)12344", "0(533)43210", "5 43 21", "123456789", "15 43 21", "+5 43 21" };
+        
+        foreach (string number in phoneNumbers)
+        {
+            bool isValid = PhoneNumberValidator.Validate(number);
+            Console.WriteLine($"Phone number {number} is valid: {!isValid}");
+        }
+    }
+}
